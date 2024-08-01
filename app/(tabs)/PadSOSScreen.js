@@ -70,7 +70,7 @@ const removeHelpRequestFromList = async (requestId) => {
 const acceptHelpRequest = async (requestId, requesterId, requesterName) => {
   const userId = auth.currentUser?.uid;
   if (!userId) {
-    Alert.alert('Error', 'User not logged in');
+ //   Alert.alert('Error', 'User not logged in');
     return;
   }
 
@@ -98,7 +98,7 @@ export default function PadSOSScreen({ navigation }) {
   const [userNames, setUserNames] = useState({});
   const [helpRequests, setHelpRequests] = useState([]);
   const [helpRequested, setHelpRequested] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState(null); // Add this state
+  const [selectedRequest, setSelectedRequest] = useState(null); 
 
   useEffect(() => {
     let isMounted = true;
