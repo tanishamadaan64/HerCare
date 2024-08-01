@@ -1,5 +1,5 @@
 #  HerCare
-It is a comprehensive period logging and health assistance tool designed to help users track their menstrual cycles and request or offer urgent assistance for menstrual care needs. It includes a "Pad SOS" option for users in need of sanitary pads to request urgent help from the nearby users.
+It is a comprehensive period logging and health assistance app designed to help users track their menstrual cycles and request or offer urgent assistance for menstrual care needs. It includes a "Pad SOS" option for users in need of sanitary pads to request urgent help from the nearby users.
 
 
 ## Demo video
