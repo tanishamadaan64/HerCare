@@ -2,7 +2,7 @@
 
 **HerCare** is a menstrual hygiene support platform designed to empower women by providing essential features like cycle tracking and a unique **Pad SOS** system to request and offer help for sanitary pad needs in real time.
 
-🔗 **Live Site:** [hercare.vercel.app](https://hercare.vercel.app)  
+🔗 **Live Site:** [hercare-mauve.vercel.app](https://hercare-mauve.vercel.app)  
 🔗 **GitHub Repository:** [github.com/tanishamadaan64/HerCare_](https://github.com/tanishamadaan64/HerCare_)
 
 ---
