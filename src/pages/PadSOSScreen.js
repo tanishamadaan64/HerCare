@@ -11,7 +11,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -27,6 +27,19 @@ L.Icon.Default.mergeOptions({
   shadowUrl:
     'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
+// Component to handle map view updates
+const MapViewController = ({ currentLocation }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (currentLocation) {
+      map.setView([currentLocation.latitude, currentLocation.longitude], 15);
+    }
+  }, [currentLocation, map]);
+  
+  return null;
+};
 
 // Utility function to get distance between two coords in KM
 const getDistance = (coord1, coord2) => {
@@ -91,8 +104,26 @@ export default function PadSOSScreen() {
       },
       () => {
         alert('Unable to retrieve your location');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
       }
     );
+  };
+
+  // Function to remove user location from Firestore
+  const removeUserLocation = async () => {
+    const userId = auth.currentUser?.uid;
+    if (userId) {
+      try {
+        await deleteDoc(doc(firestore, 'userLocations', userId));
+        console.log('User location removed from Firestore');
+      } catch (e) {
+        console.error('Error removing user location:', e);
+      }
+    }
   };
 
   useEffect(() => {
@@ -146,10 +177,12 @@ export default function PadSOSScreen() {
     };
     fetchUserNames();
 
+    // Cleanup function - remove location when component unmounts or user signs out
     return () => {
       clearInterval(interval);
       unsubscribeLocations();
       unsubscribeHelpRequests();
+      removeUserLocation(); // Remove user's location from Firestore
     };
   }, []);
 
@@ -488,9 +521,10 @@ export default function PadSOSScreen() {
                   ? [currentLocation.latitude, currentLocation.longitude]
                   : defaultPosition
               }
-              zoom={13}
+              zoom={15}
               style={{ height: '100%', width: '100%' }}
             >
+              <MapViewController currentLocation={currentLocation} />
               <TileLayer
                 attribution='&copy; OpenStreetMap contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -504,6 +538,25 @@ export default function PadSOSScreen() {
                   <Popup>{userNames[loc.id] || 'Unknown User'}</Popup>
                 </Marker>
               ))}
+
+              {/* Special marker for current user with different color */}
+              {currentLocation && (
+                <Marker
+                  position={[currentLocation.latitude, currentLocation.longitude]}
+                  icon={new L.Icon({
+                    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+                    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41],
+                    className: 'current-user-marker'
+                  })}
+                >
+                  <Popup>You are here</Popup>
+                </Marker>
+              )}
             </MapContainer>
           </div>
         </div>
