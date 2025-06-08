@@ -1,0 +1,142 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+.container {
+  width: 100vw;        /* full viewport width */
+  max-width: 100%;     /* override any max-width */
+  padding: 20px 40px;  /* horizontal padding, increase as needed */
+  margin: 0 auto;      /* keep centered horizontally if needed */
+  box-sizing: border-box;
+  background-color: #fff; /* keep background white */
+}
+
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.profileContainer {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  width: 40px;
+  height: 50px;
+  margin-right: 10px;
+}
+
+.firstName {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.logoutButton {
+  background-color: #ff5f7c;
+  border: none;
+  padding: 10px 16px;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.logoutButton:hover {
+  background-color: #e04e66;
+}
+
+.chartContainer {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.chartTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.chartImage {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 20px;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.button {
+  background-color: #ffccde;
+  padding: 20px;
+  border-radius: 10px;
+  width: 45%;
+  height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border: none;
+}
+
+.button:hover {
+  background-color: #ffb0c2;
+}
+
+.button span {
+  margin-top: 15px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.chartsContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.chartImage {
+  width: 48%;
+  max-height: 180px;
+  object-fit: contain;
+}
+
+.dataTitle {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.dataList {
+  list-style-type: disc;
+  margin-left: 20px;
+  color: #666;
+  font-size: 14px;
+}
