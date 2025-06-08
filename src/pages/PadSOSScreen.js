@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { firestore, auth } from '../../src/config/firebaseConfig';
 import {
   collection,
@@ -28,13 +28,22 @@ L.Icon.Default.mergeOptions({
     'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Component to handle map view updates
+// Enhanced component to handle map view updates
 const MapViewController = ({ currentLocation }) => {
   const map = useMap();
+  const hasZoomedRef = useRef(false);
   
   useEffect(() => {
-    if (currentLocation) {
-      map.setView([currentLocation.latitude, currentLocation.longitude], 15);
+    if (currentLocation && !hasZoomedRef.current) {
+      // Force invalidate size first (important for mobile)
+      setTimeout(() => {
+        map.invalidateSize();
+        map.setView([currentLocation.latitude, currentLocation.longitude], 16, {
+          animate: true,
+          duration: 1
+        });
+        hasZoomedRef.current = true;
+      }, 100);
     }
   }, [currentLocation, map]);
   
@@ -66,27 +75,51 @@ export default function PadSOSScreen() {
   const [helpRequested, setHelpRequested] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [mapKey, setMapKey] = useState(0); // Force map re-render when needed
+  const mapRef = useRef(null);
 
   // Handle window resize
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      // Invalidate map size on resize
+      if (mapRef.current) {
+        setTimeout(() => {
+          mapRef.current.invalidateSize();
+        }, 100);
+      }
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Get user location using browser geolocation API
+  // Enhanced location update function
   const updateLocation = () => {
     if (!navigator.geolocation) {
       alert('Geolocation not supported by your browser');
       return;
     }
+    
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const coords = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
+        
+        console.log('Location detected:', coords); // Debug log
         setCurrentLocation(coords);
+        
+        // Force map update after location is set
+        setTimeout(() => {
+          if (mapRef.current) {
+            mapRef.current.invalidateSize();
+            mapRef.current.setView([coords.latitude, coords.longitude], 16, {
+              animate: true,
+              duration: 1
+            });
+          }
+        }, 200);
 
         const userId = auth.currentUser?.uid;
         if (!userId) {
@@ -102,13 +135,14 @@ export default function PadSOSScreen() {
           console.error('Error updating location in firestore', e);
         }
       },
-      () => {
-        alert('Unable to retrieve your location');
+      (error) => {
+        console.error('Geolocation error:', error);
+        alert(`Unable to retrieve your location: ${error.message}`);
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000
+        timeout: 15000, // Increased timeout for mobile
+        maximumAge: 30000 // Reduced maximum age
       }
     );
   };
@@ -317,6 +351,11 @@ export default function PadSOSScreen() {
     }
   };
 
+  // Manual location refresh function
+  const refreshLocation = () => {
+    updateLocation();
+  };
+
   const isMobile = windowWidth <= 768;
   const isSmallMobile = windowWidth <= 480;
 
@@ -345,6 +384,27 @@ export default function PadSOSScreen() {
         .padsos-sidebar h3 {
           margin: 0 0 15px 0;
           font-size: ${isSmallMobile ? '18px' : '20px'};
+        }
+        
+        .padsos-location-status {
+          background-color: ${currentLocation ? '#e8f5e8' : '#ffebee'};
+          padding: 8px;
+          border-radius: 4px;
+          margin-bottom: 15px;
+          font-size: ${isSmallMobile ? '12px' : '14px'};
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        
+        .padsos-refresh-btn {
+          background: #2196f3;
+          color: white;
+          border: none;
+          border-radius: 3px;
+          padding: 4px 8px;
+          cursor: pointer;
+          font-size: 12px;
         }
         
         .padsos-requests-list {
@@ -435,7 +495,8 @@ export default function PadSOSScreen() {
         
         .padsos-button:hover,
         .padsos-request-help-button:hover,
-        .padsos-help-them-button:hover {
+        .padsos-help-them-button:hover,
+        .padsos-refresh-btn:hover {
           opacity: 0.9;
         }
         
@@ -463,6 +524,18 @@ export default function PadSOSScreen() {
         <div className="padsos-container">
           <div className="padsos-sidebar">
             <h3>Help Requests</h3>
+            
+            <div className="padsos-location-status">
+              <span>
+                {currentLocation 
+                  ? `📍 Location: ${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)}`
+                  : '📍 Getting location...'}
+              </span>
+              <button className="padsos-refresh-btn" onClick={refreshLocation}>
+                Refresh
+              </button>
+            </div>
+            
             <div className="padsos-requests-list">
               {helpRequests.map((item) => (
                 <div
@@ -516,13 +589,25 @@ export default function PadSOSScreen() {
 
           <div className="padsos-map-container">
             <MapContainer
+              key={mapKey}
               center={
                 currentLocation
                   ? [currentLocation.latitude, currentLocation.longitude]
                   : defaultPosition
               }
-              zoom={15}
+              zoom={currentLocation ? 16 : 13}
               style={{ height: '100%', width: '100%' }}
+              ref={mapRef}
+              whenCreated={(mapInstance) => {
+                mapRef.current = mapInstance;
+                // Force invalidate size after map is created
+                setTimeout(() => {
+                  mapInstance.invalidateSize();
+                  if (currentLocation) {
+                    mapInstance.setView([currentLocation.latitude, currentLocation.longitude], 16);
+                  }
+                }, 500);
+              }}
             >
               <MapViewController currentLocation={currentLocation} />
               <TileLayer
