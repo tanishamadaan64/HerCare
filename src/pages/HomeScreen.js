@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { auth, firestore } from '../../src/config/firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,8 +35,24 @@ export default function HomeScreen() {
     fetchUserName();
   }, []);
 
+  // Function to remove user location from Firestore
+  const removeUserLocation = async () => {
+    const userId = auth.currentUser?.uid;
+    if (userId) {
+      try {
+        await deleteDoc(doc(firestore, 'userLocations', userId));
+        console.log('User location removed from Firestore during sign out');
+      } catch (e) {
+        console.error('Error removing user location during sign out:', e);
+      }
+    }
+  };
+
   const handleLogout = async () => {
     try {
+      // Remove user location before signing out
+      await removeUserLocation();
+      
       await signOut(auth);
       navigate('/login');
     } catch (error) {
@@ -894,6 +910,8 @@ const ChartCard = styled.div`
     }
   }
 `;
+
+
 
 const ChartHeader = styled.div`
   display: flex;
