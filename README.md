@@ -24,6 +24,15 @@
 - **Database:** Firebase Firestore  
 - **Maps & Location:** Mapbox API, Geolocation  
 
+---
+
+## 🚀 Setup
+
+In the project directory, run:
+
+```bash
+npm install
+npm start
 
 ---
 
